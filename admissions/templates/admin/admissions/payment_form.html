@@ -1,0 +1,113 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label='admissions' %}">Admissions</a>
+&rsaquo; <a href="{% url 'admin:admissions_application_changelist' %}">Applications</a>
+&rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module aligned">
+        <h2>{{ title }}</h2>
+
+        <div class="card" style="margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+            <h3>Student Information</h3>
+            <table>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Application Number:</th>
+                    <td style="padding: 8px;">{{ application.applicant.application_number }}</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Name:</th>
+                    <td style="padding: 8px;">{{ application.applicant.first_name }} {{ application.applicant.last_name }}</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Program:</th>
+                    <td style="padding: 8px;">{{ application.program.name }}</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Admission Status:</th>
+                    <td style="padding: 8px; color: green; font-weight: bold;">✓ ADMITTED</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">First Semester Fee:</th>
+                    <td style="padding: 8px;">₹{{ application.first_semester_fee_amount|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Payment Status:</th>
+                    <td style="padding: 8px; color: red; font-weight: bold;">✗ PENDING</td>
+                </tr>
+            </table>
+        </div>
+
+        <form method="post" action="">
+            {% csrf_token %}
+
+            <fieldset class="module aligned">
+                <h2>Payment Details</h2>
+
+                <div class="form-row">
+                    <div>
+                        <label for="payment_amount" class="required">Payment Amount (₹):</label>
+                        <input type="number"
+                               name="payment_amount"
+                               id="payment_amount"
+                               step="0.01"
+                               min="0"
+                               value="{{ application.first_semester_fee_amount }}"
+                               required
+                               style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label for="transaction_id">Transaction ID:</label>
+                        <input type="text"
+                               name="transaction_id"
+                               id="transaction_id"
+                               placeholder="Enter transaction/reference ID"
+                               style="width: 300px; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label for="payment_method">Payment Method:</label>
+                        <select name="payment_method"
+                                id="payment_method"
+                                style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                            <option value="Online">Online Payment</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Demand Draft">Demand Draft</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 20px;">
+                    <p><strong>Note:</strong> Please verify the payment details before recording. This action will mark the first semester fee as paid and generate a payment receipt.</p>
+                </div>
+            </fieldset>
+
+            <div class="submit-row" style="margin-top: 20px;">
+                <input type="submit"
+                       value="Record Payment"
+                       class="default"
+                       style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                <a href="{% url 'admin:admissions_application_changelist' %}"
+                   class="button cancel-link"
+                   style="margin-left: 10px; padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

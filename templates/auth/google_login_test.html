@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Test - University ERP</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .user-type-selection {
+            margin: 20px 0;
+        }
+        .user-type-selection label {
+            display: block;
+            margin: 10px 0;
+        }
+        .user-type-selection input {
+            margin-right: 8px;
+        }
+        .response-area {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 University ERP - Google OAuth Test</h1>
+
+        <div class="user-type-selection">
+            <h3>Select User Type:</h3>
+            <label>
+                <input type="radio" name="userType" value="student" checked>
+                Student
+            </label>
+            <label>
+                <input type="radio" name="userType" value="faculty">
+                Faculty
+            </label>
+            <label>
+                <input type="radio" name="userType" value="admin">
+                Administrator
+            </label>
+            <label>
+                <input type="radio" name="userType" value="staff">
+                Staff
+            </label>
+        </div>
+
+        <div class="login-section">
+            <h3>Sign in with Google</h3>
+            <div id="g_id_onload"
+                 data-client_id="484280773534-8s5c9qn3q0f0j9bpj7g3jh1qj8r2s3t4.apps.googleusercontent.com"
+                 data-callback="handleCredentialResponse">
+            </div>
+            <div class="g_id_signin" data-type="standard"></div>
+        </div>
+
+        <div id="response" class="response-area">
+            <h4>Response:</h4>
+            <pre id="responseText"></pre>
+        </div>
+    </div>
+
+    <script>
+        function handleCredentialResponse(response) {
+            const userType = document.querySelector('input[name="userType"]:checked').value;
+
+            // Send the token to your Django backend
+            fetch('/api/auth/google-login/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    token: response.credential,
+                    user_type: userType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const responseDiv = document.getElementById('response');
+                const responseText = document.getElementById('responseText');
+
+                if (data.error) {
+                    responseDiv.className = 'response-area error';
+                    responseText.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    responseDiv.className = 'response-area success';
+                    responseText.textContent = JSON.stringify(data, null, 2);
+
+                    // Store tokens in localStorage for future API calls
+                    if (data.tokens) {
+                        localStorage.setItem('access_token', data.tokens.access);
+                        localStorage.setItem('refresh_token', data.tokens.refresh);
+                    }
+                }
+                responseDiv.style.display = 'block';
+            })
+            .catch(error => {
+                const responseDiv = document.getElementById('response');
+                const responseText = document.getElementById('responseText');
+                responseDiv.className = 'response-area error';
+                responseText.textContent = 'Error: ' + error.message;
+                responseDiv.style.display = 'block';
+            });
+        }
+
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

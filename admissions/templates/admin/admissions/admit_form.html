@@ -1,0 +1,87 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label='admissions' %}">Admissions</a>
+&rsaquo; <a href="{% url 'admin:admissions_application_changelist' %}">Applications</a>
+&rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="module aligned">
+        <h2>{{ title }}</h2>
+
+        <div class="card" style="margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+            <h3>Applicant Information</h3>
+            <table>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Application Number:</th>
+                    <td style="padding: 8px;">{{ application.applicant.application_number }}</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Name:</th>
+                    <td style="padding: 8px;">{{ application.applicant.first_name }} {{ application.applicant.last_name }}</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Email:</th>
+                    <td style="padding: 8px;">{{ application.applicant.email }}</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Program:</th>
+                    <td style="padding: 8px;">{{ application.program.name }}</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Academic Year:</th>
+                    <td style="padding: 8px;">{{ application.admission_cycle.academic_year }}</td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Overall Percentage:</th>
+                    <td style="padding: 8px;">{{ application.overall_percentage }}%</td>
+                </tr>
+            </table>
+        </div>
+
+        <form method="post" action="">
+            {% csrf_token %}
+
+            <fieldset class="module aligned">
+                <h2>Admission Details</h2>
+
+                <div class="form-row">
+                    <div>
+                        <label for="fee_amount" class="required">First Semester Fee Amount (₹):</label>
+                        <input type="number"
+                               name="fee_amount"
+                               id="fee_amount"
+                               step="0.01"
+                               min="0"
+                               required
+                               placeholder="Enter fee amount"
+                               style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-top: 20px;">
+                    <p><strong>Note:</strong> By clicking "Admit Applicant", you confirm that this applicant meets all admission criteria and will be provisionally admitted to the program. The applicant will need to pay the specified first semester fee to confirm their admission.</p>
+                </div>
+            </fieldset>
+
+            <div class="submit-row" style="margin-top: 20px;">
+                <input type="submit"
+                       value="Admit Applicant"
+                       class="default"
+                       style="background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+                <a href="{% url 'admin:admissions_application_changelist' %}"
+                   class="button cancel-link"
+                   style="margin-left: 10px; padding: 10px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
